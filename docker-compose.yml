@@ -1,0 +1,18 @@
+services:
+  ourgroceries-bridge:
+    build: .
+    container_name: ourgroceries-bridge
+    restart: unless-stopped
+    env_file: .env
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: ourgroceries-caddy
+    restart: unless-stopped
+    ports:
+      - "3457:3457"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./certs:/certs:ro
+    depends_on:
+      - ourgroceries-bridge

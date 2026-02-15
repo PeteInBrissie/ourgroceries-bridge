@@ -1,0 +1,4 @@
+:3457 {
+	tls /certs/llm.duck-minnow.ts.net.crt /certs/llm.duck-minnow.ts.net.key
+	reverse_proxy ourgroceries-bridge:3456
+}
