@@ -115,9 +115,18 @@ export class OurGroceriesClient {
     return data.list.items;
   }
 
+  async getCategories(listId) {
+    const data = await this.apiCall("getList", { listId });
+    return data.list.categories || [];
+  }
+
   async addItemToList(listId, value, options = {}) {
     const payload = { listId, value };
-    if (options.autoCategory) payload.autoCategory = true;
+    if (options.categoryId) {
+      payload.categoryId = options.categoryId;
+    } else if (options.autoCategory) {
+      payload.autoCategory = true;
+    }
     if (options.note) payload.note = options.note;
     return this.apiCall("insertItem", payload);
   }

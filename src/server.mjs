@@ -115,44 +115,216 @@ app.post("/lists/:id/items/:itemId/toggle", async (req, reply) => {
   }
 });
 
+function escapeHtml(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function getPageShell(title, subtitle, bodyHTML) {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${title}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --tq: #2bb5b2;
+    --tq-dark: #1a8f8c;
+    --tq-deep: #147573;
+    --tq-glow: rgba(43,181,178,0.15);
+    --tq-glass: rgba(43,181,178,0.08);
+    --sand: #faf6f1;
+    --sand-dark: #f0ebe4;
+    --ink: #2d3436;
+    --ink-soft: #636e72;
+    --ink-faint: #b2bec3;
+    --amber: #f0c75e;
+    --amber-bg: #fdf6e3;
+    --green: #27ae60;
+    --green-bg: #eafaf1;
+    --red: #e74c3c;
+    --card: #ffffff;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--sand);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+  body::before {
+    content: '';
+    position: fixed; top: 0; left: 0; right: 0; height: 280px;
+    background: linear-gradient(135deg, var(--tq) 0%, var(--tq-dark) 50%, var(--tq-deep) 100%);
+    z-index: 0;
+  }
+  .container {
+    position: relative; z-index: 1;
+    max-width: 540px; margin: 0 auto; padding: 0 16px 32px;
+  }
+  header {
+    text-align: center; padding: 28px 0 24px;
+  }
+  header h1 {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 1.75rem; font-weight: 400; color: #fff;
+    letter-spacing: -0.01em;
+  }
+  header p {
+    font-size: 0.85rem; color: rgba(255,255,255,0.7);
+    margin-top: 4px; font-weight: 500;
+  }
+  .btn {
+    display: block; width: 100%; border: none;
+    border-radius: var(--radius);
+    font-size: 1.05rem; font-weight: 600;
+    cursor: pointer; text-align: center;
+    font-family: inherit;
+    transition: all 0.25s ease;
+    text-decoration: none;
+  }
+  .btn-secondary {
+    background: var(--card); color: var(--ink);
+    padding: 14px; margin-top: 16px;
+    border: 1.5px solid rgba(0,0,0,0.08);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .btn-secondary:hover { border-color: var(--tq); color: var(--tq-dark); }
+
+  /* /add page styles */
+  .add-summary {
+    background: var(--card); border-radius: var(--radius);
+    padding: 32px 24px; text-align: center;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    animation: fadeUp 0.4s ease;
+  }
+  .add-summary .summary-icon {
+    font-size: 3rem; margin-bottom: 12px;
+    animation: popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275);
+  }
+  .add-summary h2 {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 1.3rem; font-weight: 400;
+    color: var(--green); margin-bottom: 16px;
+  }
+  .add-summary ul {
+    list-style: none; text-align: left;
+    max-width: 320px; margin: 0 auto;
+  }
+  .add-summary li {
+    padding: 6px 0; font-size: 0.88rem;
+    color: var(--ink-soft); font-weight: 500;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .add-summary .check {
+    color: var(--green); font-size: 0.8rem; flex-shrink: 0;
+  }
+  .item-cat {
+    font-size: 0.75rem; font-weight: 600;
+    color: var(--tq-dark); background: var(--tq-glass);
+    padding: 2px 8px; border-radius: 12px;
+  }
+  .item-note {
+    font-size: 0.78rem; color: var(--ink-faint);
+  }
+  .add-error {
+    background: var(--card); border-radius: var(--radius);
+    padding: 40px 24px; text-align: center;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    animation: fadeUp 0.4s ease;
+    color: var(--red);
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 1.15rem;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes popIn {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>${title}</h1>
+    ${subtitle ? '<p>' + subtitle + '</p>' : ''}
+  </header>
+  <div id="app">${bodyHTML}</div>
+</div>
+</body>
+</html>`;
+}
+
 // GET /add — browser-friendly endpoint for adding items via clickable link
 // Used by Claude.ai artifacts since sandboxed iframes can't make fetch() calls
 // Format: /add?list=Shopping+List&items=milk,eggs,flour&notes=|free+range|&key=API_KEY
 app.get("/add", async (req, reply) => {
-  const { list, items, notes } = req.query;
+  const { list, items, notes, categories } = req.query;
   if (!list || !items) {
-    reply.type("text/html").send("<h2>❌ Missing list or items parameter</h2>");
+    reply.type("text/html").send(getPageShell("Missing Parameters", "", '<div class="add-error">&#x274C; <code>list</code> and <code>items</code> query parameters are required.</div>'));
     return;
   }
   try {
     const itemList = items.split(",").map(i => i.trim()).filter(Boolean);
     const noteList = notes ? notes.split("|") : [];
+    const categoryList = categories ? categories.split("|") : [];
     const found = await og.findListByName(list);
     if (!found) {
       const all = await og.getLists();
-      reply.type("text/html").send(
-        "<h2>❌ List not found: " + list + "</h2>" +
-        "<p>Available: " + all.map(l => l.name).join(", ") + "</p>"
-      );
+      reply.type("text/html").send(getPageShell("List Not Found", "",
+        '<div class="add-error">&#x274C; List "<strong>' + escapeHtml(list) + '</strong>" not found.' +
+        '<p style="margin-top:12px;color:var(--ink-soft);font-size:0.85rem">Available: ' + all.map(l => escapeHtml(l.name)).join(", ") + '</p></div>'
+      ));
       return;
     }
+
+    // Resolve category names to IDs
+    let categoryMap = {};
+    if (categoryList.some(c => c.trim())) {
+      const cats = await og.getCategories(found.id);
+      for (const cat of cats) {
+        categoryMap[cat.name.toLowerCase()] = cat.id;
+      }
+    }
+
     for (let i = 0; i < itemList.length; i++) {
       const note = noteList[i] || undefined;
-      await og.addItemToList(found.id, itemList[i], { autoCategory: true, note });
+      const catName = (categoryList[i] || "").trim();
+      const categoryId = catName ? categoryMap[catName.toLowerCase()] : undefined;
+      await og.addItemToList(found.id, itemList[i], {
+        autoCategory: !categoryId,
+        categoryId,
+        note
+      });
     }
-    reply.type("text/html").send(
-      "<div style='font-family:system-ui;max-width:400px;margin:40px auto;text-align:center'>" +
-      "<h2>✅ Added " + itemList.length + " item" + (itemList.length > 1 ? "s" : "") + " to " + found.name + "</h2>" +
-      "<ul style='text-align:left;list-style:none;padding:0'>" +
-      itemList.map((item, i) =>
-        "<li style='padding:6px 0;border-bottom:1px solid #eee'>🛒 " + item +
-        (noteList[i] ? " <span style='color:#888'>(" + noteList[i] + ")</span>" : "") +
-        "</li>"
-      ).join("") +
-      "</ul><p style='margin-top:20px'><a href='javascript:window.close()'>Close this tab</a></p></div>"
-    );
+
+    const listHtml = itemList.map((item, i) => {
+      const note = noteList[i] || "";
+      const cat = (categoryList[i] || "").trim();
+      return '<li><span class="check">&#x2713;</span> ' + escapeHtml(item) +
+        (cat ? ' <span class="item-cat">' + escapeHtml(cat) + '</span>' : '') +
+        (note ? ' <span class="item-note">' + escapeHtml(note) + '</span>' : '') +
+        '</li>';
+    }).join("");
+
+    reply.type("text/html").send(getPageShell(escapeHtml(found.name), "Items added successfully",
+      '<div class="add-summary">' +
+      '<div class="summary-icon">&#x2705;</div>' +
+      '<h2>Added ' + itemList.length + ' item' + (itemList.length > 1 ? 's' : '') + '</h2>' +
+      '<ul>' + listHtml + '</ul>' +
+      '<a class="btn btn-secondary" href="javascript:window.close()">Close this tab</a>' +
+      '</div>'
+    ));
   } catch (err) {
-    reply.type("text/html").send("<h2>❌ Error</h2><p>" + String(err) + "</p>");
+    reply.type("text/html").send(getPageShell("Error", "", '<div class="add-error">&#x274C; ' + escapeHtml(String(err)) + '</div>'));
   }
 });
 
@@ -167,7 +339,8 @@ app.post("/meal-plan/ingredients", async (req, reply) => {
       return reply.code(404).send({ error: "\"Meal Planner\" list not found in OurGroceries" });
     }
     const items = await og.getListItems(mealPlanList.id);
-    const activeMeals = items.filter(i => !i.crossedOff);
+    app.log.info({ sampleItem: items[0] }, "Meal Planner items sample (debug crossedOff)");
+    const activeMeals = items.filter(i => !i.crossedOff && i.crossedOff !== "true");
 
     const mealsNeedingIngredients = activeMeals.filter(m => !m.note);
     const mealsWithNotes = activeMeals.filter(m => m.note);
