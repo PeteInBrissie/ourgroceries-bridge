@@ -37,7 +37,7 @@ An interactive page that reads your **Meal Planner** list from OurGroceries, sen
 - 🎨 **Polished UI** — turquoise-themed design with staggered animations and emoji-matched meal cards
 
 ### REST API for AI Assistants
-A full REST API for managing OurGroceries lists, designed for [Claude.ai](https://claude.ai) artifacts (the **BourdAIn** cooking assistant project).
+A full REST API for managing OurGroceries lists, designed for [Claude.ai](https://claude.ai) artifacts (the **[ai-cooking-assistant](https://github.com/PeteInBrissie/ai-prompts/blob/main/prompts/ai-cooking-assistant.md)** project).
 
 - 🔗 **Browser-friendly `/add` endpoint** — clickable links that work from sandboxed iframes
 - 📋 **List management** — read lists, add/remove items, toggle crossed-off status
@@ -148,11 +148,11 @@ Opens the interactive Meal Planner page. Reads meals from your "Meal Planner" li
 
 Browser-friendly endpoint for Claude.ai artifacts. Items are comma-separated, notes are pipe-separated and position-matched.
 
-## 🤖 BourdAIn Integration
+## 🤖 AI Cooking Assistant Integration
 
-This bridge is designed to work with a Claude.ai project called **BourdAIn** (a cooking assistant). See [`BOURDAIN_INSTRUCTIONS.md`](BOURDAIN_INSTRUCTIONS.md) for the custom instructions to paste into your Claude.ai project.
+This bridge is designed to work with a Claude.ai cooking assistant project. See [`AI_COOKING_ASSISTANT_INSTRUCTIONS.md`](AI_COOKING_ASSISTANT_INSTRUCTIONS.md) for the custom instructions to paste into your Claude.ai project.
 
-BourdAIn can:
+The cooking assistant can:
 - Generate clickable links that add recipe ingredients to your shopping list
 - Direct you to the Meal Planner page for weekly shopping
 

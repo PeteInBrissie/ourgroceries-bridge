@@ -1,6 +1,6 @@
-# BourdAIn — Shopping List Integration
+# AI Cooking Assistant — Shopping List Integration
 
-Paste this into the BourdAIn Claude.ai project custom instructions.
+Paste this into the AI Cooking Assistant Claude.ai project custom instructions.
 
 ---
 
