@@ -358,14 +358,29 @@ app.post("/meal-plan/ingredients", async (req, reply) => {
       const message = await anthropic.messages.create({
         model: "claude-haiku-4-5-20251001",
         max_tokens: 2048,
+        system: `You are a practical Australian grocery shopping assistant. You think like a busy home cook shopping at Coles or Woolworths.
+
+CRITICAL RULE: Always prefer pre-made or partly-processed products over listing raw ingredients separately. You must consolidate ingredients into convenience products whenever one exists in Australian supermarkets. Examples:
+- Chicken schnitzel (NOT chicken breast + flour + eggs + breadcrumbs)
+- Coleslaw kit or coleslaw mix bag (NOT cabbage + carrot + mayo)
+- Stir-fry vegetable mix (NOT individual vegetables for a stir-fry)
+- Curry paste e.g. Mae Ploy or Valcom (NOT individual spices for a curry)
+- Pasta sauce jar (NOT tinned tomatoes + garlic + onion + herbs for a basic red sauce)
+- Frozen pastry sheets (NOT flour + butter for pastry)
+- Taco kit (NOT separate shells + seasoning + salsa)
+- Marinade bottle (NOT individual marinade ingredients)
+
+Only list individual raw ingredients when no suitable convenience product exists.`,
         messages: [{
           role: "user",
-          content: `For each of the following meals, list the ingredients needed as a shopping list. Use common Australian grocery items. Be practical — skip pantry staples that most people have (salt, pepper, oil, butter, common dried herbs and spices, flour, sugar, soy sauce, stock cubes). Focus on fresh produce, proteins, dairy, and specialty items they'd need to buy.
+          content: `For each of the following meals, list the ingredients needed as a shopping list. Use common Australian grocery items. Skip pantry staples that most people have (salt, pepper, oil, butter, common dried herbs and spices, flour, sugar, soy sauce, stock cubes). Focus on fresh produce, proteins, dairy, and specialty items they'd need to buy.
+
+Remember: always suggest the pre-made/convenience version if one exists at Coles or Woolworths.
 
 Each ingredient should have a clean "name" (what you'd look for in the shop) and a "note" with quantity or other detail (e.g. brand, variety).
 
 Return ONLY valid JSON, no markdown fencing. Use this exact format:
-[{"meal":"Meal Name","ingredients":[{"name":"Chicken breast","note":"600g, 4 fillets"}]}]
+[{"meal":"Meal Name","ingredients":[{"name":"Chicken schnitzel","note":"4 pack, crumbed"}]}]
 
 Meals:
 ${mealNames.map((n, i) => `${i + 1}. ${n}`).join("\n")}`
